@@ -27,7 +27,10 @@ async function readStats() {
   const forMint = mint;
   reading ??= marketCap(RPC, forMint)
     .then((r) => (stats = { mint: forMint, mcapUsd: r.mcapUsd, mcapSol: r.mcapSol, venue: r.venue, at: Date.now() }))
-    .catch((e) => { console.log(`[mcap] ${String(e?.message ?? e).slice(0, 160)}`); return stats.mint === forMint ? stats : { mint: forMint, mcapUsd: null }; })
+    .catch((e) => { // a failed read is cached like a good one: the last good number stays, the RPC is asked again in 10 s
+      console.log(`[mcap] ${String(e?.message ?? e).slice(0, 160)}`);
+      return (stats = { ...(stats.mint === forMint ? stats : { mint: forMint, mcapUsd: null }), at: Date.now() });
+    })
     .finally(() => { reading = null; });
   const s = await reading;
   return s.mint === mint ? s : { mint, mcapUsd: null };
