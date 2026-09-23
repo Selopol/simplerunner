@@ -1,0 +1,78 @@
+:root {
+  --ink: oklch(19% 0.012 255);          /* the marker line of the logo */
+  --paper: oklch(98.6% 0.008 95);
+  --sky-top: oklch(72% 0.14 238);
+  --sky: oklch(82% 0.1 232);
+  --grass: oklch(70% 0.17 135);
+  --hand: "Short Stack", "Comic Sans MS", "Chalkboard SE", system-ui, sans-serif;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--hand);
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--sky-top), var(--sky) 58%, var(--grass) 58%);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* the runner is the site */
+.wall { position: fixed; inset: 0; z-index: 0; background: url("/runner-poster.jpg?v=1") 50% 30% / cover no-repeat; }
+.wall video { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+@media (prefers-reduced-motion: reduce) { .wall video { display: none; } }
+
+/* one screen: the name in the sky, the links on the grass */
+.screen {
+  position: relative; z-index: 1;
+  height: 100dvh;
+  display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+  padding: calc(clamp(22px, 6vh, 64px) + env(safe-area-inset-top)) clamp(16px, 3vw, 40px) calc(clamp(22px, 5vh, 52px) + env(safe-area-inset-bottom));
+}
+.mark { width: clamp(250px, 44vw, 720px); line-height: 0; }
+.mark img { display: block; width: 100%; height: auto; }
+
+.dock { display: flex; align-items: center; justify-content: center; gap: 14px; max-width: 100%; }
+
+/* stickers drawn with the same marker: paper, a thick ink line, a hard ink shadow */
+.key, .ca {
+  display: inline-flex; align-items: center;
+  height: 64px;
+  background: var(--paper); color: var(--ink);
+  border: 4px solid var(--ink); border-radius: 999px;
+  box-shadow: 0 6px 0 var(--ink);
+  cursor: pointer; text-decoration: none; font: inherit;
+  transition: transform 140ms var(--ease), box-shadow 140ms var(--ease);
+}
+.key:hover, .ca:hover { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ink); }
+.key:active, .ca:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--ink); }
+.key:focus-visible, .ca:focus-visible { outline: 4px solid var(--paper); outline-offset: 4px; }
+
+.key { width: 64px; justify-content: center; flex: none; }
+.key svg { width: 26px; height: 26px; fill: var(--ink); }
+
+.ca { min-width: 0; gap: 14px; padding: 0 8px 0 24px; }
+.ca[hidden] { display: none; }
+.ca-lab { font-size: 20px; font-weight: 400; letter-spacing: 0.02em; flex: none; }
+.ca-val { font: 17px var(--hand); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.ca-act {
+  flex: none; display: grid; place-items: center;
+  width: 42px; height: 42px; border-radius: 999px;
+  background: var(--ink);
+}
+.ca-act svg { grid-area: 1 / 1; width: 22px; height: 22px; fill: none; stroke: var(--paper); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: opacity 160ms var(--ease), transform 160ms var(--ease); }
+.ca-act .i-done { opacity: 0; transform: scale(0.6); }
+.ca.is-copied .i-copy { opacity: 0; transform: scale(0.6); }
+.ca.is-copied .i-done { opacity: 1; transform: none; }
+
+@media (max-width: 640px) {
+  .mark { width: min(84vw, 420px); }
+  .key, .ca { height: 56px; }
+  .key { width: 56px; }
+  .key svg { width: 22px; height: 22px; }
+  .ca { gap: 10px; padding: 0 6px 0 16px; }
+  .ca-lab { font-size: 17px; }
+  .ca-val { font-size: 14px; }
+  .ca-act { width: 38px; height: 38px; }
+}

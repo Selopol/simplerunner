@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>simple runner</title>
+<meta name="description" content="simple runner">
+<meta property="og:title" content="simple runner">
+<meta property="og:description" content="simple runner">
+<meta property="og:image" content="/og.jpg?v=1">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@simplerunnersol">
+<meta name="theme-color" content="#4db4f5">
+<link rel="icon" href="/favicon.png?v=1" type="image/png" sizes="64x64">
+<link rel="icon" href="/icon-512.png?v=1" type="image/png" sizes="512x512">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Short+Stack&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css?v=1">
+</head>
+<body>
+
+<div class="wall" aria-hidden="true">
+  <video id="wall" autoplay muted loop playsinline preload="auto" poster="/runner-poster.jpg?v=1"></video>
+</div>
+
+<main class="screen">
+  <h1 class="mark"><img src="/wordmark.svg?v=1" alt="simple runner" width="1245" height="241"></h1>
+
+  <nav class="dock" aria-label="Links">
+    <a class="key" href="https://x.com/simplerunnersol" target="_blank" rel="noopener" aria-label="simple runner on X">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    </a>
+    <button class="ca" id="copy" type="button" hidden aria-label="Copy contract address">
+      <span class="ca-lab">CA</span>
+      <code class="ca-val" id="ca"></code>
+      <span class="ca-act" aria-hidden="true">
+        <svg class="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="2.5"/><path d="M15.5 5.5v-.5a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h.5"/></svg>
+        <svg class="i-done" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+      </span>
+    </button>
+  </nav>
+</main>
+
+<script src="/app.js?v=1"></script>
+</body>
+</html>
