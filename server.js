@@ -6,16 +6,32 @@ import http from "node:http";
 import { createReadStream, promises as fs } from "node:fs";
 import { timingSafeEqual } from "node:crypto";
 import path from "node:path";
+import { marketCap } from "./mcap.js";
 
 const PORT = Number(process.env.PORT || 8791);
 const WEB = path.resolve("web");
 const DATA = path.resolve(process.env.DATA_DIR || "data");
 const CONFIG = path.join(DATA, "config.json");
 const ADMIN = process.env.ADMIN_KEY || "";
+const RPC = process.env.RPC_URL || (process.env.HELIUS_API_KEY ? `https://mainnet.helius-rpc.com/?api-key=${process.env.HELIUS_API_KEY}` : "");
 const MINT_RE = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 
 let mint = MINT_RE.test(process.env.MINT || "") ? process.env.MINT : null;
 try { const c = JSON.parse(await fs.readFile(CONFIG, "utf8")); if (c.mint === null || MINT_RE.test(c.mint)) mint = c.mint; } catch { /* first start */ }
+
+// the market cap, read at most every 10 s whatever the number of visitors; a failed read keeps the last good one
+let stats = { mint: null, mcapUsd: null, at: 0 }, reading = null;
+async function readStats() {
+  if (!mint || !RPC) return { mint, mcapUsd: null };
+  if (stats.mint === mint && Date.now() - stats.at < 10_000) return stats;
+  const forMint = mint;
+  reading ??= marketCap(RPC, forMint)
+    .then((r) => (stats = { mint: forMint, mcapUsd: r.mcapUsd, mcapSol: r.mcapSol, venue: r.venue, at: Date.now() }))
+    .catch((e) => { console.log(`[mcap] ${String(e?.message ?? e).slice(0, 160)}`); return stats.mint === forMint ? stats : { mint: forMint, mcapUsd: null }; })
+    .finally(() => { reading = null; });
+  const s = await reading;
+  return s.mint === mint ? s : { mint, mcapUsd: null };
+}
 
 const TYPES = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".mp4": "video/mp4", ".webmanifest": "application/manifest+json", ".txt": "text/plain; charset=utf-8" };
 const CACHE = { ".html": "no-cache", ".mp4": "public, max-age=604800", ".jpg": "public, max-age=604800", ".png": "public, max-age=604800" };
@@ -58,6 +74,7 @@ http.createServer(async (req, res) => {
   try {
     if (url.pathname === "/health") return json(res, 200, { ok: true });
     if (url.pathname === "/api/config" && req.method === "GET") return json(res, 200, { mint });
+    if (url.pathname === "/api/stats" && req.method === "GET") { const s = await readStats(); return json(res, 200, { mint: s.mint, mcapUsd: s.mcapUsd ?? null }); }
     if (url.pathname === "/api/admin/config" && req.method === "POST") {
       if (!keyOk(req.headers["x-admin-key"])) return json(res, 403, { error: "forbidden" });
       const body = JSON.parse(await readBody(req) || "{}");
@@ -74,4 +91,4 @@ http.createServer(async (req, res) => {
   } catch (e) {
     json(res, 400, { error: String(e?.message ?? e).slice(0, 120) });
   }
-}).listen(PORT, () => console.log(`simple runner on :${PORT}, mint ${mint ?? "none"}, switch ${ADMIN ? "on" : "off"}`));
+}).listen(PORT, () => console.log(`simple runner on :${PORT}, mint ${mint ?? "none"}, switch ${ADMIN ? "on" : "off"}, rpc ${RPC ? "set" : "missing"}`));

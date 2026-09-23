@@ -1,17 +1,18 @@
-// simple runner. The runner, the name, X and the CA once there is one. Reads /api/config only.
+// simple runner: X, the CA once there is one, the market cap on the sky. Reads /api/stats only.
+// ?mc=<usd> shows a market cap without a coin (to look at the sky before launch).
 (() => {
   const $ = (s) => document.querySelector(s);
+  const copy = $("#copy"), ca = $("#ca"), mc = $("#mc"), mcVal = $("#mc-val");
+  const preview = Number(new URLSearchParams(location.search).get("mc")) || 0;
+  let mint = null, shown = "", timer = 0;
 
-  // 4K on wide screens, 1080p on phones; the poster sits underneath either way
-  const wall = $("#wall");
-  if (wall && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    wall.src = matchMedia("(max-width: 900px)").matches ? "/runner-1080.mp4?v=1" : "/runner.mp4?v=1";
-    wall.play().catch(() => {});
-  }
-
-  const copy = $("#copy"), ca = $("#ca");
-  let mint = null, timer = 0;
-  const apply = () => { ca.textContent = mint || ""; copy.hidden = !mint; };
+  const money = (v) => v >= 1e9 ? `$${(v / 1e9).toFixed(2)}B` : v >= 1e6 ? `$${(v / 1e6).toFixed(v >= 1e8 ? 0 : v >= 1e7 ? 1 : 2)}M` : v >= 1e3 ? `$${(v / 1e3).toFixed(v >= 1e5 ? 0 : 1)}K` : `$${Math.round(v)}`;
+  const show = (usd) => {
+    mc.hidden = !(usd > 0);
+    if (!(usd > 0)) return;
+    const text = money(usd);
+    if (text !== shown) { if (shown) { mc.classList.remove("is-bump"); void mc.offsetWidth; mc.classList.add("is-bump"); } shown = text; mcVal.textContent = text; }
+  };
   copy.addEventListener("click", async () => {
     if (!mint) return;
     try { await navigator.clipboard.writeText(mint); }
@@ -20,9 +21,12 @@
     timer = setTimeout(() => copy.classList.remove("is-copied"), 1400);
   });
   const load = async () => {
-    try { mint = (await (await fetch("/api/config", { cache: "no-store" })).json()).mint || null; } catch {}
-    apply();
+    try {
+      const s = await (await fetch("/api/stats", { cache: "no-store" })).json();
+      mint = s.mint || null; ca.textContent = mint || ""; copy.hidden = !mint;
+      show(preview || s.mcapUsd);
+    } catch { show(preview); }
   };
   load();
-  setInterval(load, 20_000);
+  setInterval(load, 10_000);
 })();

@@ -1,10 +1,8 @@
 :root {
   --ink: oklch(19% 0.012 255);          /* the marker line of the logo */
   --paper: oklch(98.6% 0.008 95);
-  --sky-top: oklch(72% 0.14 238);
-  --sky: oklch(82% 0.1 232);
-  --grass: oklch(70% 0.17 135);
-  --hand: "Short Stack", "Comic Sans MS", "Chalkboard SE", system-ui, sans-serif;
+  --fg: var(--ink);                     /* the runner's colour, set by the scene: ink by day, chalk by night */
+  --hand: "Schoolbell", "Comic Sans MS", "Chalkboard SE", system-ui, sans-serif;
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -13,25 +11,39 @@ html, body { height: 100%; }
 body {
   font-family: var(--hand);
   color: var(--ink);
-  background: linear-gradient(180deg, var(--sky-top), var(--sky) 58%, var(--grass) 58%);
+  background: linear-gradient(180deg, oklch(72% 0.14 238), oklch(84% 0.09 232) 58%, oklch(76% 0.17 130) 58%);
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-/* the runner is the site */
-.wall { position: fixed; inset: 0; z-index: 0; background: url("/runner-poster.jpg?v=1") 50% 30% / cover no-repeat; }
-.wall video { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
-@media (prefers-reduced-motion: reduce) { .wall video { display: none; } }
+/* the whole picture is drawn by scene.js */
+#scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; z-index: 0; }
 
-/* one screen: the name in the sky, the links on the grass */
+/* one screen: the name and the market cap in the sky, the links on the ground */
 .screen {
   position: relative; z-index: 1;
   height: 100dvh;
   display: flex; flex-direction: column; align-items: center; justify-content: space-between;
   padding: calc(clamp(22px, 6vh, 64px) + env(safe-area-inset-top)) clamp(16px, 3vw, 40px) calc(clamp(22px, 5vh, 52px) + env(safe-area-inset-bottom));
+  pointer-events: none;
 }
+.screen a, .screen button { pointer-events: auto; }
+.sky { display: flex; flex-direction: column; align-items: center; gap: clamp(6px, 1.6vh, 16px); color: var(--fg); transition: color 600ms linear; }
 .mark { width: clamp(250px, 44vw, 720px); line-height: 0; }
-.mark img { display: block; width: 100%; height: auto; }
+.mark-svg { display: block; width: 100%; height: auto; }
+
+/* the market cap is written on the sky in the same hand */
+.mc { display: flex; flex-direction: column; align-items: center; line-height: 1; }
+.mc[hidden] { display: none; }
+.mc-val {
+  font-size: clamp(40px, 6.4vw, 92px);
+  -webkit-text-stroke: 0.035em currentColor;  /* Schoolbell is a pen; the logo is a marker */
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.mc-lab { font-size: clamp(19px, 2vw, 28px); -webkit-text-stroke: 0.02em currentColor; opacity: 0.8; margin-top: 2px; }
+.mc.is-bump .mc-val { animation: bump 420ms var(--ease); }
+@keyframes bump { 40% { transform: scale(1.07); } }
 
 .dock { display: flex; align-items: center; justify-content: center; gap: 14px; max-width: 100%; }
 
@@ -54,13 +66,9 @@ body {
 
 .ca { min-width: 0; gap: 14px; padding: 0 8px 0 24px; }
 .ca[hidden] { display: none; }
-.ca-lab { font-size: 20px; font-weight: 400; letter-spacing: 0.02em; flex: none; }
-.ca-val { font: 17px var(--hand); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-.ca-act {
-  flex: none; display: grid; place-items: center;
-  width: 42px; height: 42px; border-radius: 999px;
-  background: var(--ink);
-}
+.ca-lab { font-size: 22px; -webkit-text-stroke: 0.03em currentColor; flex: none; }
+.ca-val { font: 19px var(--hand); -webkit-text-stroke: 0.02em currentColor; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.ca-act { flex: none; display: grid; place-items: center; width: 42px; height: 42px; border-radius: 999px; background: var(--ink); }
 .ca-act svg { grid-area: 1 / 1; width: 22px; height: 22px; fill: none; stroke: var(--paper); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: opacity 160ms var(--ease), transform 160ms var(--ease); }
 .ca-act .i-done { opacity: 0; transform: scale(0.6); }
 .ca.is-copied .i-copy { opacity: 0; transform: scale(0.6); }
@@ -72,7 +80,8 @@ body {
   .key { width: 56px; }
   .key svg { width: 22px; height: 22px; }
   .ca { gap: 10px; padding: 0 6px 0 16px; }
-  .ca-lab { font-size: 17px; }
-  .ca-val { font-size: 14px; }
+  .ca-lab { font-size: 18px; }
+  .ca-val { font-size: 15px; }
   .ca-act { width: 38px; height: 38px; }
 }
+@media (prefers-reduced-motion: reduce) { .mc.is-bump .mc-val { animation: none; } }
